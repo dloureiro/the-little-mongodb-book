@@ -121,87 +121,87 @@ Revenons à nos collections *schema-less*. Essayez d'insérer un document totale
 
 Là encore, utilisez `find` pour lister les documents. Quand nous en saurons un peu plus, nous discuterons de ce comportement intéressant de MongoDB, mais vous devriez déjà commencer à comprendre en quoi les solutions classiques ne convenaient plus.
 
-## Mastering Selectors ##
-In addition to the six concepts we've explored, there's one practical aspect of MongoDB you need to have a good grasp of before moving to more advanced topics: query selectors. A MongoDB query selector is like the `where` clause of an SQL statement. As such, you use it when finding, counting, updating and removing documents from collections. A selector is a JSON object, the simplest of which is `{}` which matches all documents (`null` works too). If we wanted to find all female unicorns, we could use `{gender:'f'}`.
+## Maîtriser les sélecteurs ##
+En plus des six concepts que nous avons explorés, il y a un aspect pratique de MongoDB qu'il est important de bien comprendre, avant de pouvoir aborder des sujets plus complexes : il s'agit des *query selectors*, les sélecteurs de requête. Un *query selector* est l'équivalent pour MongoDB de la clause `where` d'une requête SQL. On l'utilise pour trouver, compter, mettre à jour et effacer des documents dans des sélections. Un sélecteur est un objet JSON ; le plus simple, `{}`, sélectionne tous les documents (`null` marche aussi). Si l'on voulait trouver toutes les licornes femelles, on pourrait utiliser `{sexe : 'f'}`.
 
-Before delving too deeply into selectors, let's set up some data to play with. First, remove what we've put so far in the `unicorns` collection via: `db.unicorns.remove()` (since we aren't supplying a selector, it'll remove all documents). Now, issue the following inserts to get some data we can play with (I suggest you copy and paste this):
+Avant de se plonger plus avant dans les sélecteurs, nous allons créer des données avec lesquelles jouer. D'abord, nous allons supprimer ce que nous avons mis précédemment dans `licornes` avec `db.licornes.remove()` (nous ne précisons pas de sélecteur, donc tous les documents seront supprimés). Maintenant, saisissez les commandes suivantes pour obtenir des données (je vous recommande d'utiliser un coper-coller) :
 
-	db.unicorns.insert({name: 'Horny', dob: new Date(1992,2,13,7,47), loves: ['carrot','papaya'], weight: 600, gender: 'm', vampires: 63});
-	db.unicorns.insert({name: 'Aurora', dob: new Date(1991, 0, 24, 13, 0), loves: ['carrot', 'grape'], weight: 450, gender: 'f', vampires: 43});
-	db.unicorns.insert({name: 'Unicrom', dob: new Date(1973, 1, 9, 22, 10), loves: ['energon', 'redbull'], weight: 984, gender: 'm', vampires: 182});
-	db.unicorns.insert({name: 'Roooooodles', dob: new Date(1979, 7, 18, 18, 44), loves: ['apple'], weight: 575, gender: 'm', vampires: 99});
-	db.unicorns.insert({name: 'Solnara', dob: new Date(1985, 6, 4, 2, 1), loves:['apple', 'carrot', 'chocolate'], weight:550, gender:'f', vampires:80});
-	db.unicorns.insert({name:'Ayna', dob: new Date(1998, 2, 7, 8, 30), loves: ['strawberry', 'lemon'], weight: 733, gender: 'f', vampires: 40});
-	db.unicorns.insert({name:'Kenny', dob: new Date(1997, 6, 1, 10, 42), loves: ['grape', 'lemon'], weight: 690,  gender: 'm', vampires: 39});
-	db.unicorns.insert({name: 'Raleigh', dob: new Date(2005, 4, 3, 0, 57), loves: ['apple', 'sugar'], weight: 421, gender: 'm', vampires: 2});
-	db.unicorns.insert({name: 'Leia', dob: new Date(2001, 9, 8, 14, 53), loves: ['apple', 'watermelon'], weight: 601, gender: 'f', vampires: 33});
-	db.unicorns.insert({name: 'Pilot', dob: new Date(1997, 2, 1, 5, 3), loves: ['apple', 'watermelon'], weight: 650, gender: 'm', vampires: 54});
-	db.unicorns.insert({name: 'Nimue', dob: new Date(1999, 11, 20, 16, 15), loves: ['grape', 'carrot'], weight: 540, gender: 'f'});
-	db.unicorns.insert({name: 'Dunx', dob: new Date(1976, 6, 18, 18, 18), loves: ['grape', 'watermelon'], weight: 704, gender: 'm', vampires: 165});
+	db.licornes.insert({nom: 'Horny', ddn: new Date(1992,2,13,7,47), aime: ['carote','papaye'], poids: 600, sexe: 'm', vampires: 63});
+	db.licornes.insert({name: 'Aurora', ddn: new Date(1991, 0, 24, 13, 0), aime: ['carotte', 'raisin'], poids: 450, sexe: 'f', vampires: 43});
+	db.licornes.insert({name: 'Unicrom', ddn: new Date(1973, 1, 9, 22, 10), aime: ['energon', 'redbull'], poids: 984, sexe: 'm', vampires: 182});
+	db.licornes.insert({name: 'Roooooodles', ddn: new Date(1979, 7, 18, 18, 44), aime: ['pomme'], poids: 575, sexe: 'm', vampires: 99});
+	db.licornes.insert({name: 'Solnara', ddn: new Date(1985, 6, 4, 2, 1), aime:['pomme', 'carotte', 'chocolate'], poids:550, sexe:'f', vampires:80});
+	db.licornes.insert({name:'Ayna', ddn: new Date(1998, 2, 7, 8, 30), aime: ['fraise', 'citron'], poids: 733, sexe: 'f', vampires: 40});
+	db.licornes.insert({name:'Kenny', ddn: new Date(1997, 6, 1, 10, 42), aime: ['raisin', 'citron'], poids: 690,  sexe: 'm', vampires: 39});
+	db.licornes.insert({name: 'Raleigh', ddn: new Date(2005, 4, 3, 0, 57), aime: ['pomme', 'sucre'], poids: 421, sexe: 'm', vampires: 2});
+	db.licornes.insert({name: 'Leia', ddn: new Date(2001, 9, 8, 14, 53), aime: ['pomme', 'pastèque'], poids: 601, sexe: 'f', vampires: 33});
+	db.licornes.insert({name: 'Pilot', ddn: new Date(1997, 2, 1, 5, 3), aime: ['pomme', 'pastèque'], poids: 650, sexe: 'm', vampires: 54});
+	db.licornes.insert({name: 'Nimue', ddn: new Date(1999, 11, 20, 16, 15), aime: ['raisin', 'carotte'], poids: 540, sexe: 'f'});
+	db.licornes.insert({name: 'Dunx', ddn: new Date(1976, 6, 18, 18, 18), aime: ['raisin', 'pastèque'], poids: 704, sexe: 'm', vampires: 165});
 
-Now that we have data, we can master selectors. `{field: value}` is used to find any documents where `field` is equal to `value`. `{field1: value1, field2: value2}` is how we do an `and` statement. The special `$lt`, `$lte`, `$gt`, `$gte` and `$ne` are used for less than, less than or equal, greater than, greater than or equal and not equal operations. For example, to get all male unicorns that weigh more than 700 pounds, we could do:
+Nous avons des données, nous allons pouvoir maîtriser les sélecteurs. `{champ: valeur}` est utilisé pour trouver des documents où le `champ` est égal à `valeur`. Pour obtenir un `et`, on utilise `{champ1: valeur1, champ2: valeur2}`. Pour effectuer les comparaisons inférieur, inférieur ou égal, supérieur, supérieur ou égal, et différent, on utilise `$lt`, `$lte`, `$gt`, `$gte`, et `$ne`. Par exemple, pour trouver les licornes mâles qui pèsent plus de 700 kilos, on pourrait utiliser :
 
-	db.unicorns.find({gender: 'm', weight: {$gt: 700}})
-	//or (not quite the same thing, but for demonstration purposes)
-	db.unicorns.find({gender: {$ne: 'f'}, weight: {$gte: 701}})
+	db.licornes.find({sexe: 'm', poids: {$gt: 700}})
+	// ou encore (pas strictement identique, mais utilisé pour montrer les possibilités)
+	db.licornes.find({sexe: {$ne: 'f'}, poids: {$gte: 701}})
 
-The `$exists` operator is used for matching the presence or absence of a field, for example:
+L'opérateur `$exists` est utilisé pour valider la présence ou l'absence d'un champ. Ainsi, l'exemple :
 
-	db.unicorns.find({vampires: {$exists: false}})
+	db.licornes.find({vampires: {$exists: false}})
 
-Should return a single document. If we want to OR rather than AND we use the `$or` operator and assign it to an array of values we want or'd:
+ne devrait retourner qu'un seul document. Pour appliquer l'opérateur `ou` plutôt que `et`, on utilise `$or` et on lui assigne la liste des valeurs auxquelles appliquer le `ou` :
 
-	db.unicorns.find({gender: 'f', $or: [{loves: 'apple'}, {loves: 'orange'}, {weight: {$lt: 500}}]})
+	db.licornes.find({sexe: 'f', $or: [{aime: 'pomme'}, {aime: 'orange'}, {poids: {$lt: 500}}]})
 
-The above will return all female unicorns which either love apples or oranges or weigh less than 500 pounds.
+La commande ci-dessus va retourner toutes les licornes femelles qui soit aiment les pommes, soit aiment les oranges, soit pèsent moins de 500 kilos.
 
-There's something pretty neat going on in our last example. You might have already noticed, but the `loves` field is an array. MongoDB supports arrays as first class objects. This is an incredibly handy feature. Once you start using it, you wonder how you ever lived without it. What's more interesting is how easy selecting based on an array value is: `{loves: 'watermelon'}` will return any document where `watermelon` is a value of `loves`.
+Cet exemple est très intéressant : vous l'avez peut-être déjà remarqué, mais le champ `aime` est un tableau. MongoDB accepte les tableaux comme objets à part entière, ce qui est extrêmement pratique. Une fois que vous commencerez à l'utiliser, vous vous demanderez comment vous faisiez, avant. Plus intéressant encore, la facilité avec laquelle on peut faire une sélection sur la valeur d'un tableau : `{aime: 'pastèque'}` va retourner tous les documents dans lesquels `pastèque` est une valeur de `aime`.
 
-There are more available operators than what we've seen so far. The most flexible being `$where` which lets us supply JavaScript to execute on the server. These are all described in the [Advanced Queries](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries) section of the MongoDB website. What we've covered so far though is the basics you'll need to get started. It's also what you'll end up using most of the time.
+Il y a d'autres opérateurs que ceux que nous avons vus pour l'instant. Le plus flexible est `$where` qui permet de passer du JavaScript à exécuter sur le serveur. Ils sont tous décrits dans la section [Advanced Queries](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries) du site de MongoDB. Ceux que nous avons vus jusqu'à présents sont ceux dont vous avez besoin pour démarrer. Ce sont aussi ceux que vous utiliserez le plus souvent.
 
-We've seen how these selectors can be used with the `find` command. They can also be used with the `remove` command which we've briefly looked at, the `count` command, which we haven't looked at but you can probably figure out, and the `update` command which we'll spend more time with later on.
+Nous avons vu que ces sélecteurs peuvent être utilisés avec la commande `find`. Ils peuvent aussi être utilisés avec la commande `remove` que nous avons abordée brièvement, la commande `count` dont vous devinez probablement l'utilité, et la commande `update` avec laquelle nous allons passer du temps plus tard.
 
-The `ObjectId` which MongoDB generated for our `_id` field can be selected like so:
+Le `ObjectId` que MongoDB a généré pour notre champ `_id` peut être sélectionné comme ceci :
 
-	db.unicorns.find({_id: ObjectId("TheObjectId")})
+	db.licornes.find({_id: ObjectId("monObjectId")})
 
-## In This Chapter ##
-We haven't looked at the `update` command yet, or some of the fancier things we can do with `find`. However, we did get MongoDB up and running, looked briefly at the `insert` and `remove` commands (there isn't much more than what we've seen). We also introduced `find` and saw what MongoDB `selectors` were all about. We've had a good start and laid a solid foundation for things to come. Believe it or not, you actually know most of what there is to know about MongoDB - it really is meant to be quick to learn and easy to use. I strongly urge you to play with your local copy before moving on. Insert different documents, possibly in new collections, and get familiar with different selectors. Use `find`, `count` and `remove`. After a few tries on your own, things that might have seemed awkward at first will hopefully fall into place.
+## Dans ce chapitre ##
+Nous n'avons pas encore abordé la commande `update` ou certaines utilisations avancées de `find`. Par contre, nous avons fait fonctionner MongoDB, survolé les commandes `insert` et `remove` (il n'y a pas grand chose de plus à savoir !), et présenté `find` et les `sélecteurs` MongoDB. Nous sommes partis sur des bases solides. Croyez-le ou pas, mais vous connaissez désormais l'essentiel de ce qu'il y a à savoir sur MongoDB : c'est conçuç pour être rapide à apprendre et facile à utiliser. Je recommande vivement de jouer encore un peu avec votre BDD locale avant de passer à la suite. Insérez des documents différents, éventuellement dans de nouvelles collections, et familiarisez-vous avec les sélecteurs. Utilisez `find`, `count`, et `remove`. Après quelques essais par vous-même, ce qui vous avait échappé au début devrait devenir plus clair.
 
-# Chapter 2 - Updating #
+# Chapitre 2 - Mettre à jour #
 In chapter 1 we introduced three of the four CRUD (create, read, update and delete) operations. This chapter is dedicated to the one we skipped over: `update`. `Update` has a few surprising behaviors, which is why we dedicate a chapter to it.
 
 ## Update: Replace Versus $set ##
-In its simplest form, `update` takes 2 arguments: the selector (where) to use and what field to update with. If Roooooodles had gained a bit of weight, we could execute:
+In its simplest form, `update` takes 2 arguments: the selector (where) to use and what field to update with. If Roooooodles had gained a bit of poids, we could execute:
 
-	db.unicorns.update({name: 'Roooooodles'}, {weight: 590})
+	db.licornes.update({name: 'Roooooodles'}, {poids: 590})
 
-(If you've played with your `unicorns` collection and it doesn't have the original data anymore, go ahead and `remove` all documents and re-insert from the code in chapter 1.)
+(If you've played with your `licornes` collection and it doesn't have the original data anymore, go ahead and `remove` all documents and re-insert from the code in chapter 1.)
 
 If this was real code, you'd probably update your records by `_id`, but since I don't know what `_id` MongoDB generated for you, we'll stick to `names`. Now, if we look at the updated record:
 
-	db.unicorns.find({name: 'Roooooodles'})
+	db.licornes.find({name: 'Roooooodles'})
 
 You should discover the first surprise of `update`. No document is found because the second parameter we supply is used to **replace** the original. In other words, the `update` found a document by `name` and replaced the entire document with the new document (the 2nd parameter). This is different than how SQL's `update` command works. In some situations, this is ideal and can be leveraged for some truly dynamic updates. However, when all you want to do is change the value of one, or a few fields, you are best to use MongoDB's `$set` modifier:
 
-	db.unicorns.update({weight: 590}, {$set: {name: 'Roooooodles', dob: new Date(1979, 7, 18, 18, 44), loves: ['apple'], gender: 'm', vampires: 99}})
+	db.licornes.update({poids: 590}, {$set: {name: 'Roooooodles', ddn: new Date(1979, 7, 18, 18, 44), aime: ['pomme'], sexe: 'm', vampires: 99}})
 
-This'll reset the lost fields. It won't overwrite the new `weight` since we didn't specify it. Now if we execute:
+This'll reset the lost fields. It won't overwrite the new `poids` since we didn't specify it. Now if we execute:
 
-	db.unicorns.find({name: 'Roooooodles'})
+	db.licornes.find({name: 'Roooooodles'})
 
-We get the expected result. Therefore, the correct way to have updated the weight in the first place is:
+We get the expected result. Therefore, the correct way to have updated the poids in the first place is:
 
-	db.unicorns.update({name: 'Roooooodles'}, {$set: {weight: 590}})
+	db.licornes.update({name: 'Roooooodles'}, {$set: {poids: 590}})
 
 ## Update Modifiers ##
 In addition to `$set`, we can leverage other modifiers to do some nifty things. All of these update modifiers work on fields - so your entire document won't be wiped out. For example, the `$inc` modifier is used to increment a field by a certain positive or negative amount. For example, if Pilot was incorrectly awarded a couple vampire kills, we could correct the mistake by executing:
 
-	db.unicorns.update({name: 'Pilot'}, {$inc: {vampires: -2}})
+	db.licornes.update({name: 'Pilot'}, {$inc: {vampires: -2}})
 
-If Aurora suddenly developed a sweet tooth, we could add a value to her `loves` field via the `$push` modifier:
+If Aurora suddenly developed a sweet tooth, we could add a value to her `aime` field via the `$push` modifier:
 
-	db.unicorns.update({name: 'Aurora'}, {$push: {loves: 'sugar'}})
+	db.licornes.update({name: 'Aurora'}, {$push: {loves: 'sucre'}})
 
 The [Updating](http://www.mongodb.org/display/DOCS/Updating) section of the MongoDB website has more information on the other available update modifiers.
 
@@ -210,29 +210,29 @@ One of the more pleasant surprises of using `update` is that it fully supports `
 
 A mundane example is a hit counter for a website. If we wanted to keep an aggregate count in real time, we'd have to see if the record already existed for the page, and based on that decide to run an update or insert. With the third parameter omitted (or set to false), executing the following won't do anything:
 
-	db.hits.update({page: 'unicorns'}, {$inc: {hits: 1}});
+	db.hits.update({page: 'licornes'}, {$inc: {hits: 1}});
 	db.hits.find();
 
 However, if we enable upserts, the results are quite different:
 
-	db.hits.update({page: 'unicorns'}, {$inc: {hits: 1}}, true);
+	db.hits.update({page: 'licornes'}, {$inc: {hits: 1}}, true);
 	db.hits.find();
 
-Since no documents exists with a field `page` equal to `unicorns`, a new document is inserted. If we execute it a second time, the existing document is updated and `hits` is incremented to 2.
+Since no documents exists with a field `page` equal to `licornes`, a new document is inserted. If we execute it a second time, the existing document is updated and `hits` is incremented to 2.
 
-	db.hits.update({page: 'unicorns'}, {$inc: {hits: 1}}, true);
+	db.hits.update({page: 'licornes'}, {$inc: {hits: 1}}, true);
 	db.hits.find();
 
 ## Multiple Updates ##
 The final surprise `update` has to offer is that, by default, it'll update a single document. So far, for the examples we've looked at, this might seem logical. However, if you executed something like:
 
-	db.unicorns.update({}, {$set: {vaccinated: true }});
-	db.unicorns.find({vaccinated: true});
+	db.licornes.update({}, {$set: {vaccinated: true }});
+	db.licornes.find({vaccinated: true});
 
-You'd expect to find all of your precious unicorns to be vaccinated. To get the behavior you desire, a fourth parameter must be set to true:
+You'd expect to find all of your precious licornes to be vaccinated. To get the behavior you desire, a fourth parameter must be set to true:
 
-	db.unicorns.update({}, {$set: {vaccinated: true }}, false, true);
-	db.unicorns.find({vaccinated: true});
+	db.licornes.update({}, {$set: {vaccinated: true }}, false, true);
+	db.licornes.find({vaccinated: true});
 
 ## In This Chapter ##
 This chapter concluded our introduction to the basic CRUD operations available against a collection. We looked at `update` in detail and observed three interesting behaviors. First, unlike an SQL update, MongoDB's `update` replaces the actual document. Because of this the `$set` modifier is quite useful. Secondly, `update` supports an intuitive `upsert` which is particularly useful when paired with the `$inc` modifier. Finally, by default, `update` only updates the first found document.
@@ -243,9 +243,9 @@ Do remember that we are looking at MongoDB from the point of view of its shell. 
 Chapter 1 provided a superficial look at the `find` command. There's more to `find` than understanding `selectors` though. We already mentioned that the result from `find` is a `cursor`. We'll now look at exactly what this means in more detail.
 
 ## Field Selection ##
-Before we jump into `cursors`, you should know that `find` takes a second optional parameter. This parameter is the list of fields we want to retrieve. For example, we can get all of the unicorns' names by executing:
+Before we jump into `cursors`, you should know that `find` takes a second optional parameter. This parameter is the list of fields we want to retrieve. For example, we can get all of the licornes' names by executing:
 
-	db.unicorns.find(null, {name: 1});
+	db.licornes.find(null, {name: 1});
 
 By default, the `_id` field is always returned. We can explicitly exclude it by specifying `{name:1, _id: 0}`.
 
@@ -254,29 +254,29 @@ Aside from the `_id` field, you cannot mix and match inclusion and exclusion. If
 ## Ordering ##
 A few times now I've mentioned that `find` returns a cursor whose execution is delayed until needed. However, what you've no doubt observed from the shell is that `find` executes immediately. This is a behavior of the shell only. We can observe the true behavior of `cursors` by looking at one of the methods we can chain to `find`. The first that we'll look at is `sort`. `sort` works a lot like the field selection from the previous section. We specify the fields we want to sort on, using 1 for ascending and -1 for descending. For example:
 
-	//heaviest unicorns first
-	db.unicorns.find().sort({weight: -1})
+	//heaviest licornes first
+	db.licornes.find().sort({poids: -1})
 
 	//by unicorn name then vampire kills:
-	db.unicorns.find().sort({name: 1, vampires: -1})
+	db.licornes.find().sort({name: 1, vampires: -1})
 
 As with a relational database, MongoDB can use an index for sorting. We'll look at indexes in more detail later on. However, you should know that MongoDB limits the size of your sort without an index. That is, if you try to sort a large result set which can't use an index, you'll get an error. Some people see this as a limitation. In truth, I wish more databases had the capability to refuse to run unoptimized queries. (I won't turn every MongoDB drawback into a positive, but I've seen enough poorly optimized databases that I sincerely wish they had a strict-mode.)
 
 ## Paging ##
 Paging results can be accomplished via the `limit` and `skip` cursor methods. To get the second and third heaviest unicorn, we could do:
 
-	db.unicorns.find().sort({weight: -1}).limit(2).skip(1)
+	db.licornes.find().sort({poids: -1}).limit(2).skip(1)
 
 Using `limit` in conjunction with `sort`, is a good way to avoid running into problems when sorting on non-indexed fields.
 
 ## Count ##
 The shell makes it possible to execute a `count` directly on a collection, such as:
 
-	db.unicorns.count({vampires: {$gt: 50}})
+	db.licornes.count({vampires: {$gt: 50}})
 
 In reality, `count` is actually a `cursor` method, the shell simply provides a shortcut. Drivers which don't provide such a shortcut need to be executed like this (which will also work in the shell):
 
-	db.unicorns.find({vampires: {$gt: 50}}).count()
+	db.licornes.find({vampires: {$gt: 50}}).count()
 
 ## In This Chapter ##
 Using `find` and `cursors` is a straightforward proposition. There are a few additional commands that we'll either cover in later chapters or which only serve edge cases, but, by now, you should be getting pretty comfortable working in the mongo shell and understanding the fundamentals of MongoDB.
@@ -289,7 +289,7 @@ Out of all NoSQL databases, document-oriented databases are probably the most si
 ## No Joins ##
 The first and most fundamental difference that you'll need to get comfortable with is MongoDB's lack of joins. I don't know the specific reason why some type of join syntax isn't supported in MongoDB, but I do know that joins are generally seen as non-scalable. That is, once you start to split your data horizontally, you end up performing your joins on the client (the application server) anyways. Regardless of the reasons, the fact remains that data *is* relational, and MongoDB doesn't support joins.
 
-Without knowing anything else, to live in a join-less world, we have to do joins ourselves within our application's code. Essentially we need to issue a second query to `find` the relevant data. Setting our data up isn't any different than declaring a foreign key in a relational database. Let's give a little less focus to our beautiful `unicorns` and a bit more time to our `employees`. The first thing we'll do is create an employee (I'm providing an explicit `_id` so that we can build coherent examples)
+Without knowing anything else, to live in a join-less world, we have to do joins ourselves within our application's code. Essentially we need to issue a second query to `find` the relevant data. Setting our data up isn't any different than declaring a foreign key in a relational database. Let's give a little less focus to our beautiful `licornes` and a bit more time to our `employees`. The first thing we'll do is create an employee (I'm providing an explicit `_id` so that we can build coherent examples)
 
 	db.employees.insert({_id: ObjectId("4d85c7039ab0fd70a117d730"), name: 'Leto'})
 
@@ -592,19 +592,19 @@ In this last chapter, we look at a few performance topics as well as some of the
 At the very beginning we saw the special `system.indexes` collection which contains information on all the indexes in our database. Indexes in MongoDB work a lot like indexes in a relational database: they help improve query and sorting performance. Indexes are created via `ensureIndex`:
 
 	// where "name" is the fieldname
-	db.unicorns.ensureIndex({name: 1});
+	db.licornes.ensureIndex({name: 1});
 
 And dropped via `dropIndex`:
 
-	db.unicorns.dropIndex({name: 1});
+	db.licornes.dropIndex({name: 1});
 
 A unique index can be created by supplying a second parameter and setting `unique` to `true`:
 
-	db.unicorns.ensureIndex({name: 1}, {unique: true});
+	db.licornes.ensureIndex({name: 1}, {unique: true});
 
 Indexes can be created on embedded fields (again, using the dot-notation) and on array fields. We can also create compound indexes:
 
-	db.unicorns.ensureIndex({name: 1, vampires: -1});
+	db.licornes.ensureIndex({name: 1, vampires: -1});
 
 The order of your index (1 for ascending, -1 for descending) doesn't matter for a single key index, but it can have an impact for compound indexes when you are sorting or using a range condition.
 
@@ -613,13 +613,13 @@ The [indexes page](http://www.mongodb.org/display/DOCS/Indexes) has additional i
 ## Explain ##
 To see whether or not your queries are using an index, you can use the `explain` method on a cursor:
 
-	db.unicorns.find().explain()
+	db.licornes.find().explain()
 
 The output tells us that a `BasicCursor` was used (which means non-indexed), that 12 objects were scanned, how long it took, what index, if any, was used as well as a few other pieces of useful information.
 
 If we change our query to use an index, we'll see that a `BtreeCursor` was used, as well as the index used to fulfill the request:
 
-	db.unicorns.find({name: 'Pilot'}).explain()
+	db.licornes.find({name: 'Pilot'}).explain()
 
 ## Fire And Forget Writes ##
 We previously mentioned that, by default, writes in MongoDB are fire-and-forget. This can result in some nice performance gains at the risk of losing data during a crash. An interesting side effect of this type of write is that an error is not returned when an insert/update violates a unique constraint. In order to be notified about a failed write, one must call `db.getLastError()` after an insert. Many drivers abstract this detail away and provide a way to do a *safe* write - often via an extra parameter.
@@ -635,7 +635,7 @@ MongoDB replication works similarly to how relational database replication works
 While replication can improve performance (by distributing reads), its main purpose is to increase reliability. Combining replication with sharding is a common approach. For example, each shard could be made up of a master and a slave. (Technically you'll also need an arbiter to help break a tie should two slaves try to become masters. But an arbiter requires very few resources and can be used for multiple shards.)
 
 ## Stats ##
-You can obtain statistics on a database by typing `db.stats()`. Most of the information deals with the size of your database. You can also get statistics on a collection, say `unicorns`, by typing `db.unicorns.stats()`. Again, most of this information relates to the size of your collection.
+You can obtain statistics on a database by typing `db.stats()`. Most of the information deals with the size of your database. You can also get statistics on a collection, say `licornes`, by typing `db.licornes.stats()`. Again, most of this information relates to the size of your collection.
 
 ## Web Interface ##
 Included in the information displayed on MongoDB's startup was a link to a web-based administrative tool (you might still be able to see it if you scroll your command/terminal window up to the point where you started `mongod`). You can access this by pointing your browser to <http://localhost:28017/>. To get the most out of it, you'll want to add `rest=true` to your config and restart the `mongod` process. The web interface gives you a lot of insight into the current state of your server.
@@ -647,7 +647,7 @@ You can enable the MongoDB profiler by executing:
 
 With it enabled, we can run a command:
 
-	db.unicorns.find({weight: {$gt: 600}});
+	db.licornes.find({poids: {$gt: 600}});
 
 And then examine the profiler:
 
@@ -667,17 +667,17 @@ For example, to back up our `learn` database to a `backup` folder, we'd execute 
 
 	mongodump --db learn --out backup
 
-To restore only the `unicorns` collection, we could then do:
+To restore only the `licornes` collection, we could then do:
 
-	mongorestore --collection unicorns backup/learn/unicorns.bson
+	mongorestore --collection licornes backup/learn/licornes.bson
 
 It's worth pointing out that `mongoexport` and `mongoimport` are two other executables which can be used to export and import data from JSON or CSV. For example, we can get a JSON output by doing:
 
-	mongoexport --db learn -collection unicorns
+	mongoexport --db learn -collection licornes
 
 And a CSV output by doing:
 
-	mongoexport --db learn -collection unicorns --csv -fields name,weight,vampires
+	mongoexport --db learn -collection licornes --csv -fields name,poids,vampires
 
 Note that `mongoexport` and `mongoimport` cannot always represent your data. Only `mongodump` and `mongorestore` should ever be used for actual backups.
 
