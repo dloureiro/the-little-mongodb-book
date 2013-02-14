@@ -165,81 +165,81 @@ Le `ObjectId` que MongoDB a généré pour notre champ `_id` peut être sélecti
 
 	db.licornes.find({_id: ObjectId("monObjectId")})
 
-## Dans ce chapitre ##
+## Résumé du chapitre ##
 Nous n'avons pas encore abordé la commande `update` ou certaines utilisations avancées de `find`. Par contre, nous avons fait fonctionner MongoDB, survolé les commandes `insert` et `remove` (il n'y a pas grand chose de plus à savoir !), et présenté `find` et les `sélecteurs` MongoDB. Nous sommes partis sur des bases solides. Croyez-le ou pas, mais vous connaissez désormais l'essentiel de ce qu'il y a à savoir sur MongoDB : c'est conçuç pour être rapide à apprendre et facile à utiliser. Je recommande vivement de jouer encore un peu avec votre BDD locale avant de passer à la suite. Insérez des documents différents, éventuellement dans de nouvelles collections, et familiarisez-vous avec les sélecteurs. Utilisez `find`, `count`, et `remove`. Après quelques essais par vous-même, ce qui vous avait échappé au début devrait devenir plus clair.
 
-# Chapitre 2 - Mettre à jour #
-In chapter 1 we introduced three of the four CRUD (create, read, update and delete) operations. This chapter is dedicated to the one we skipped over: `update`. `Update` has a few surprising behaviors, which is why we dedicate a chapter to it.
+# Chapitre 2 - Update #
+Dans le premier chapitre, nous avons présenté trois des quatre opérations CRUD (*create*, *read*, *update*, et *delete* soit créer, lire, mettre à jour et effacer). Le présent chapitre est donc consacré à celle qui manque : `update`, et à son fonctionnement parfois un peu surprenant.
 
-## Update: Replace Versus $set ##
-In its simplest form, `update` takes 2 arguments: the selector (where) to use and what field to update with. If Roooooodles had gained a bit of poids, we could execute:
+## Update : Replace ou $set ? ##
+Dans sa forme la plus simple, `update` prend deux arguments : le sélecteur (*where*) à utiliser, et le champ à mettre à jour. Si Roooooodles a pris un peu de poids, on peut exécuter :
 
-	db.licornes.update({name: 'Roooooodles'}, {poids: 590})
+	db.licornes.update({nom: 'Roooooodles'}, {poids: 590})
 
-(If you've played with your `licornes` collection and it doesn't have the original data anymore, go ahead and `remove` all documents and re-insert from the code in chapter 1.)
+(Si vous avez joué avec votre collection `licornes` et qu'elle ne contient plus les données originales, repartez de zéro en faisant `remove` puis en ré-utilisant le code du chapitre 1.)
 
-If this was real code, you'd probably update your records by `_id`, but since I don't know what `_id` MongoDB generated for you, we'll stick to `names`. Now, if we look at the updated record:
+S'il s'agissait de vrai code, on utiliserait sûrement `_id` pour mettre à jour les données. Mais comme je ne sais pas quel `_id` MongoDB a généré pour vous, nous allons utiliser les `noms`. Jetons maintenant un oeil sur la mise à jour :
 
-	db.licornes.find({name: 'Roooooodles'})
+	db.licornes.find({nom: 'Roooooodles'})
 
-You should discover the first surprise of `update`. No document is found because the second parameter we supply is used to **replace** the original. In other words, the `update` found a document by `name` and replaced the entire document with the new document (the 2nd parameter). This is different than how SQL's `update` command works. In some situations, this is ideal and can be leveraged for some truly dynamic updates. However, when all you want to do is change the value of one, or a few fields, you are best to use MongoDB's `$set` modifier:
+Première surprise d'`update` : aucun document n'est trouvé. En effet, le deuxième paramètre fourni est utilise pour **remplacer** l'original. Autrement dit, `update` a trouvé un document basé sur son `nom` et a remplacé le document entier par le nouveau document (le second paramètre). Ce fonctionnement est différent de celui de la commande `update` en SQL. Dans certains cas, ce comportement est très utile pour des mises à jour vraiment dynamiques. Cependant, quand vous souhaitez simplement remplacer la valeur d'un ou plusieurs champs, il est mieux d'utiliser le modificateur `$set` de MongoDB :
 
-	db.licornes.update({poids: 590}, {$set: {name: 'Roooooodles', ddn: new Date(1979, 7, 18, 18, 44), aime: ['pomme'], sexe: 'm', vampires: 99}})
+	db.licornes.update({poids: 590}, {$set: {nom: 'Roooooodles', ddn: new Date(1979, 7, 18, 18, 44), aime: ['pomme'], sexe: 'm', vampires: 99}})
 
-This'll reset the lost fields. It won't overwrite the new `poids` since we didn't specify it. Now if we execute:
+Nous voilà de nouveau avec les champs du début. `poids` n'a pas été modifié puisque nous ne l'avons pas spécifié. Maintenant, si l'on exécute :
 
-	db.licornes.find({name: 'Roooooodles'})
+	db.licornes.find({nom: 'Roooooodles'})
 
-We get the expected result. Therefore, the correct way to have updated the poids in the first place is:
+on obtient le résultat attendu. La méthode qu'il aurait fallu utiliser pour mettre le poids à jour est donc :
 
-	db.licornes.update({name: 'Roooooodles'}, {$set: {poids: 590}})
+	db.licornes.update({nom: 'Roooooodles'}, {$set: {poids: 590}})
 
-## Update Modifiers ##
-In addition to `$set`, we can leverage other modifiers to do some nifty things. All of these update modifiers work on fields - so your entire document won't be wiped out. For example, the `$inc` modifier is used to increment a field by a certain positive or negative amount. For example, if Pilot was incorrectly awarded a couple vampire kills, we could correct the mistake by executing:
+## Modificateurs de update ##
+En plus de `$set`, on peut utiliser d'autres modificateurs pour faire des trucs sympas. Tous ces modificateurs de update fonctionne sur les champs, donc vous n'allez pas effacer tout votre document. Ainsi, le modificateur `$inc` est utilisé pour incrémenter un champ d'une certaine quantité, positive ou négative. Par exemple, si on a attribué à Pilot trop de *kills* de vampires, on peut corriger l'erreur avec :
 
-	db.licornes.update({name: 'Pilot'}, {$inc: {vampires: -2}})
+	db.licornes.update({nom: 'Pilot'}, {$inc: {vampires: -2}})
 
-If Aurora suddenly developed a sweet tooth, we could add a value to her `aime` field via the `$push` modifier:
+Si Aurora succombe à l'attrait des sucreries, on peut ajouter une valeur à son champ `aime` avec le modificateur `$push` :
 
-	db.licornes.update({name: 'Aurora'}, {$push: {loves: 'sucre'}})
+	db.licornes.update({noms: 'Aurora'}, {$push: {aime: 'sucre'}})
 
-The [Updating](http://www.mongodb.org/display/DOCS/Updating) section of the MongoDB website has more information on the other available update modifiers.
+La section [Updating](http://www.mongodb.org/display/DOCS/Updating) du site de MongoDB dispose de plus d'information sur les autres modificateurs disponibles.
 
 ## Upserts ##
-One of the more pleasant surprises of using `update` is that it fully supports `upserts`. An `upsert` updates the document if found or inserts it if not. Upserts are handy to have in certain situations and, when you run into one, you'll know it. To enable upserting we set a third parameter to `true`.
+L'une des bonnes surprises de `update` est qu'on peut utiliser un `upsert`. Un `upsert` met à jour un document s'il existe ou le crée sinon. C'est très utile dans certaines situations : vous les reconnaîtrez quand vous les verrez. Pour utiliser `upsert`, il faut utiliser un troisième paramètre, `true`.
 
-A mundane example is a hit counter for a website. If we wanted to keep an aggregate count in real time, we'd have to see if the record already existed for the page, and based on that decide to run an update or insert. With the third parameter omitted (or set to false), executing the following won't do anything:
+Exemple trivial : un compteur de visites pour un site. Si on voulait avoir un compte total en temps réel, il faudrait vérifier si une entrée existe déjà pour la page, et décider d'utiliser `update` ou `insert`. Avec un troisième paramètre omis (ou `false`), les commandes suivantes ne feraient rien :
 
-	db.hits.update({page: 'licornes'}, {$inc: {hits: 1}});
-	db.hits.find();
+	db.visites.update({page: 'licornes'}, {$inc: {visites: 1}});
+	db.visites.find();
 
-However, if we enable upserts, the results are quite different:
+Par contre, si on active les upserts, le résultat est différent :
 
-	db.hits.update({page: 'licornes'}, {$inc: {hits: 1}}, true);
-	db.hits.find();
+	db.visites.update({page: 'licornes'}, {$inc: {visites: 1}}, true);
+	db.visites.find();
 
-Since no documents exists with a field `page` equal to `licornes`, a new document is inserted. If we execute it a second time, the existing document is updated and `hits` is incremented to 2.
+Comme aucun document n'existe avec un champ `page` avec la valeur `licornes`, un nouveau document est créé. Si la commande est exécutée à nouveau, le document existant est mis à jour et `visites` est incrémenté à 2.
 
-	db.hits.update({page: 'licornes'}, {$inc: {hits: 1}}, true);
-	db.hits.find();
+	db.visites.update({page: 'licornes'}, {$inc: {visites: 1}}, true);
+	db.visites.find();
 
-## Multiple Updates ##
-The final surprise `update` has to offer is that, by default, it'll update a single document. So far, for the examples we've looked at, this might seem logical. However, if you executed something like:
+## Updates multiples ##
+La dernière surprise que nous réserve `update`, c'est que, par défaut, un seul document est mis à jour. Dans les exemples que nous avons vus, cela paraît logique. En revanche, si l'on exécute quelque chose comme ça :
 
-	db.licornes.update({}, {$set: {vaccinated: true }});
-	db.licornes.find({vaccinated: true});
+	db.licornes.update({}, {$set: {vacciné: true }});
+	db.licornes.find({vacciné: true});
 
-You'd expect to find all of your precious licornes to be vaccinated. To get the behavior you desire, a fourth parameter must be set to true:
+on s'attendrait à récupérer toutes nos chères licornes qui doivent être vaccinées. Pour obtenir le comportement désiré, il faut ajouter un quatrième paramètre et lui assigner `true` :
 
-	db.licornes.update({}, {$set: {vaccinated: true }}, false, true);
-	db.licornes.find({vaccinated: true});
+	db.licornes.update({}, {$set: {vacciné: true }}, false, true);
+	db.licornes.find({vacciné: true});
 
-## In This Chapter ##
-This chapter concluded our introduction to the basic CRUD operations available against a collection. We looked at `update` in detail and observed three interesting behaviors. First, unlike an SQL update, MongoDB's `update` replaces the actual document. Because of this the `$set` modifier is quite useful. Secondly, `update` supports an intuitive `upsert` which is particularly useful when paired with the `$inc` modifier. Finally, by default, `update` only updates the first found document.
+## Résumé du chapitre ##
+Ce chapitre a conclu notre présentation des opérations CRUD disponibles pour une collection. Nous nous sommes intéressés en particulier à `update` et avons observé trois comportements intéressants. D'abord, contrairement à SQL, un `update` MongoDB remplace le document trouvé. Le modificateur `$set` est donc très utile. Ensuite, `update` propose une variante `upsert` très utile, surtout combinée au modificateur `$inc`. Enfin, par défaut, `update` ne met à jour que le premier document trouvé.
 
-Do remember that we are looking at MongoDB from the point of view of its shell. The driver and library you use could alter these default behaviors or expose a different API. For example, the Ruby driver merges the last two parameters into a single hash: `{:upsert => false, :multi => false}`. Similarly, the PHP driver, merges the last two parameters into an array: `array('upsert' => false, 'multiple' => false)`.
+Rappelez-vous que nous utilisons MongoDB depuis son *shell*. Le pilote ou la bibliothèque que vous utiliserez pourront modifier ces comportements par défaut ou exposer une API différente. Ainsi, le pilote Ruby fusionne les deux derniers paramètres en un seul élément : `{:upsert => false, :multi => false}`. De même, les pilote PHP les fusionne dans un tableau : `array('upsert' => false, 'multiple' => false)`.
 
-# Chapter 3 - Mastering Find #
+# Chapter 3 - Maîtriser find #
 Chapter 1 provided a superficial look at the `find` command. There's more to `find` than understanding `selectors` though. We already mentioned that the result from `find` is a `cursor`. We'll now look at exactly what this means in more detail.
 
 ## Field Selection ##
@@ -429,9 +429,9 @@ MapReduce is a pattern that has grown in popularity, and you can make use of it 
 ## A Mix of Theory and Practice ##
 MapReduce is a two-step process. First you map, and then you reduce. The mapping step transforms the inputted documents and emits a key=>value pair (the key and/or value can be complex). Then, key/value pairs are grouped by key, such that values for the same key end up in an array. The reduce gets a key and this array of values emitted for that key, and produces the final result. We'll look at each step, and the output of each step.
 
-The example that we'll be using is to generate a report of the number of hits, per day, we get on a resource (say a webpage). This is the *hello world* of MapReduce. For our purposes, we'll rely on a `hits` collection with two fields: `resource` and `date`. Our desired output is a breakdown by `resource`, `year`, `month`, `day` and `count`.
+The example that we'll be using is to generate a report of the number of visites, per day, we get on a resource (say a webpage). This is the *hello world* of MapReduce. For our purposes, we'll rely on a `visites` collection with two fields: `resource` and `date`. Our desired output is a breakdown by `resource`, `year`, `month`, `day` and `count`.
 
-Given the following data in `hits`:
+Given the following data in `visites`:
 
 	resource     date
 	index        Jan 20 2010 4:30
@@ -458,7 +458,7 @@ The nice thing about this type of approach to analytics is that by storing the o
 
 For the time being, focus on understanding the concept. At the end of this chapter, sample data and code will be given for you to try on your own.
 
-The first thing to do is look at the map function. The goal of map is to make it emit a value which can be reduced. It's possible for map to emit 0 or more times. In our case, it'll always emit once (which is common). Imagine map as looping through each document in hits. For each document we want to emit a key with resource, year, month and day, and a simple value of 1:
+The first thing to do is look at the map function. The goal of map is to make it emit a value which can be reduced. It's possible for map to emit 0 or more times. In our case, it'll always emit once (which is common). Imagine map as looping through each document in visites. For each document we want to emit a key with resource, year, month and day, and a simple value of 1:
 
 	function() {
 		var key = {
@@ -543,16 +543,16 @@ Finally, we aren't going to cover it here but it's common to chain reduce method
 ## Pure Practical ##
 With MongoDB we use the `mapReduce` command on a collection. `mapReduce` takes a map function, a reduce function and an output directive. In our shell we can create and pass a JavaScript function. From most libraries you supply a string of your functions (which is a bit ugly). First though, let's create our simple data set:
 
-	db.hits.insert({resource: 'index', date: new Date(2010, 0, 20, 4, 30)});
-	db.hits.insert({resource: 'index', date: new Date(2010, 0, 20, 5, 30)});
-	db.hits.insert({resource: 'about', date: new Date(2010, 0, 20, 6, 0)});
-	db.hits.insert({resource: 'index', date: new Date(2010, 0, 20, 7, 0)});
-	db.hits.insert({resource: 'about', date: new Date(2010, 0, 21, 8, 0)});
-	db.hits.insert({resource: 'about', date: new Date(2010, 0, 21, 8, 30)});
-	db.hits.insert({resource: 'index', date: new Date(2010, 0, 21, 8, 30)});
-	db.hits.insert({resource: 'about', date: new Date(2010, 0, 21, 9, 0)});
-	db.hits.insert({resource: 'index', date: new Date(2010, 0, 21, 9, 30)});
-	db.hits.insert({resource: 'index', date: new Date(2010, 0, 22, 5, 0)});
+	db.visites.insert({resource: 'index', date: new Date(2010, 0, 20, 4, 30)});
+	db.visites.insert({resource: 'index', date: new Date(2010, 0, 20, 5, 30)});
+	db.visites.insert({resource: 'about', date: new Date(2010, 0, 20, 6, 0)});
+	db.visites.insert({resource: 'index', date: new Date(2010, 0, 20, 7, 0)});
+	db.visites.insert({resource: 'about', date: new Date(2010, 0, 21, 8, 0)});
+	db.visites.insert({resource: 'about', date: new Date(2010, 0, 21, 8, 30)});
+	db.visites.insert({resource: 'index', date: new Date(2010, 0, 21, 8, 30)});
+	db.visites.insert({resource: 'about', date: new Date(2010, 0, 21, 9, 0)});
+	db.visites.insert({resource: 'index', date: new Date(2010, 0, 21, 9, 30)});
+	db.visites.insert({resource: 'index', date: new Date(2010, 0, 22, 5, 0)});
 
 Now we can create our map and reduce functions (the MongoDB shell accepts multi-line statements, you'll see *...* after hitting enter to indicate more text is expected):
 
@@ -571,11 +571,11 @@ Now we can create our map and reduce functions (the MongoDB shell accepts multi-
 
 We can pass our `map` and `reduce` functions to the `mapReduce` command by running:
 
-	db.hits.mapReduce(map, reduce, {out: {inline:1}})
+	db.visites.mapReduce(map, reduce, {out: {inline:1}})
 
 If you run the above, you should see the desired output. Setting `out` to `inline` means that the output from `mapReduce` is immediately streamed back to us. This is currently limited for results that are 16 megabytes or less. We could instead specify `{out: 'hit_stats'}` and have the results stored in the `hit_stats` collections:
 
-	db.hits.mapReduce(map, reduce, {out: 'hit_stats'});
+	db.visites.mapReduce(map, reduce, {out: 'hit_stats'});
 	db.hit_stats.find();
 
 When you do this, any existing data in `hit_stats` is lost. If we did `{out: {merge: 'hit_stats'}}` existing keys would be replaced with the new values and new keys would be inserted as new documents. Finally, we can `out` using a `reduce` function to handle more advanced cases (such an doing an upsert).
