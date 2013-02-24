@@ -126,13 +126,13 @@ En plus des six concepts que nous avons explorés, il y a un aspect pratique de 
 
 Avant de se plonger plus avant dans les sélecteurs, nous allons créer des données avec lesquelles jouer. D'abord, nous allons supprimer ce que nous avons mis précédemment dans `licornes` avec `db.licornes.remove()` (nous ne précisons pas de sélecteur, donc tous les documents seront supprimés). Maintenant, saisissez les commandes suivantes pour obtenir des données (je vous recommande d'utiliser un coper-coller) :
 
-	db.licornes.insert({nom: 'Horny', ddn: new Date(1992,2,13,7,47), aime: ['carote','papaye'], poids: 600, sexe: 'm', vampires: 63});
+	db.licornes.insert({name: 'Horny', ddn: new Date(1992,2,13,7,47), aime: ['carote','papaye'], poids: 600, sexe: 'm', vampires: 63});
 	db.licornes.insert({name: 'Aurora', ddn: new Date(1991, 0, 24, 13, 0), aime: ['carotte', 'raisin'], poids: 450, sexe: 'f', vampires: 43});
 	db.licornes.insert({name: 'Unicrom', ddn: new Date(1973, 1, 9, 22, 10), aime: ['energon', 'redbull'], poids: 984, sexe: 'm', vampires: 182});
 	db.licornes.insert({name: 'Roooooodles', ddn: new Date(1979, 7, 18, 18, 44), aime: ['pomme'], poids: 575, sexe: 'm', vampires: 99});
 	db.licornes.insert({name: 'Solnara', ddn: new Date(1985, 6, 4, 2, 1), aime:['pomme', 'carotte', 'chocolate'], poids:550, sexe:'f', vampires:80});
-	db.licornes.insert({name:'Ayna', ddn: new Date(1998, 2, 7, 8, 30), aime: ['fraise', 'citron'], poids: 733, sexe: 'f', vampires: 40});
-	db.licornes.insert({name:'Kenny', ddn: new Date(1997, 6, 1, 10, 42), aime: ['raisin', 'citron'], poids: 690,  sexe: 'm', vampires: 39});
+	db.licornes.insert({name: 'Ayna', ddn: new Date(1998, 2, 7, 8, 30), aime: ['fraise', 'citron'], poids: 733, sexe: 'f', vampires: 40});
+	db.licornes.insert({name: 'Kenny', ddn: new Date(1997, 6, 1, 10, 42), aime: ['raisin', 'citron'], poids: 690,  sexe: 'm', vampires: 39});
 	db.licornes.insert({name: 'Raleigh', ddn: new Date(2005, 4, 3, 0, 57), aime: ['pomme', 'sucre'], poids: 421, sexe: 'm', vampires: 2});
 	db.licornes.insert({name: 'Leia', ddn: new Date(2001, 9, 8, 14, 53), aime: ['pomme', 'pastèque'], poids: 601, sexe: 'f', vampires: 33});
 	db.licornes.insert({name: 'Pilot', ddn: new Date(1997, 2, 1, 5, 3), aime: ['pomme', 'pastèque'], poids: 650, sexe: 'm', vampires: 54});
@@ -174,30 +174,30 @@ Dans le premier chapitre, nous avons présenté trois des quatre opérations CRU
 ## Update : Replace ou $set ? ##
 Dans sa forme la plus simple, `update` prend deux arguments : le sélecteur (*where*) à utiliser, et le champ à mettre à jour. Si Roooooodles a pris un peu de poids, on peut exécuter :
 
-	db.licornes.update({nom: 'Roooooodles'}, {poids: 590})
+	db.licornes.update({name: 'Roooooodles'}, {poids: 590})
 
 (Si vous avez joué avec votre collection `licornes` et qu'elle ne contient plus les données originales, repartez de zéro en faisant `remove` puis en ré-utilisant le code du chapitre 1.)
 
 S'il s'agissait de vrai code, on utiliserait sûrement `_id` pour mettre à jour les données. Mais comme je ne sais pas quel `_id` MongoDB a généré pour vous, nous allons utiliser les `noms`. Jetons maintenant un oeil sur la mise à jour :
 
-	db.licornes.find({nom: 'Roooooodles'})
+	db.licornes.find({name: 'Roooooodles'})
 
 Première surprise d'`update` : aucun document n'est trouvé. En effet, le deuxième paramètre fourni est utilise pour **remplacer** l'original. Autrement dit, `update` a trouvé un document basé sur son `nom` et a remplacé le document entier par le nouveau document (le second paramètre). Ce fonctionnement est différent de celui de la commande `update` en SQL. Dans certains cas, ce comportement est très utile pour des mises à jour vraiment dynamiques. Cependant, quand vous souhaitez simplement remplacer la valeur d'un ou plusieurs champs, il est mieux d'utiliser le modificateur `$set` de MongoDB :
 
-	db.licornes.update({poids: 590}, {$set: {nom: 'Roooooodles', ddn: new Date(1979, 7, 18, 18, 44), aime: ['pomme'], sexe: 'm', vampires: 99}})
+	db.licornes.update({poids: 590}, {$set: {name: 'Roooooodles', ddn: new Date(1979, 7, 18, 18, 44), aime: ['pomme'], sexe: 'm', vampires: 99}})
 
 Nous voilà de nouveau avec les champs du début. `poids` n'a pas été modifié puisque nous ne l'avons pas spécifié. Maintenant, si l'on exécute :
 
-	db.licornes.find({nom: 'Roooooodles'})
+	db.licornes.find({name: 'Roooooodles'})
 
 on obtient le résultat attendu. La méthode qu'il aurait fallu utiliser pour mettre le poids à jour est donc :
 
-	db.licornes.update({nom: 'Roooooodles'}, {$set: {poids: 590}})
+	db.licornes.update({name: 'Roooooodles'}, {$set: {poids: 590}})
 
 ## Modificateurs de update ##
 En plus de `$set`, on peut utiliser d'autres modificateurs pour faire des trucs sympas. Tous ces modificateurs de update fonctionne sur les champs, donc vous n'allez pas effacer tout votre document. Ainsi, le modificateur `$inc` est utilisé pour incrémenter un champ d'une certaine quantité, positive ou négative. Par exemple, si on a attribué à Pilot trop de *kills* de vampires, on peut corriger l'erreur avec :
 
-	db.licornes.update({nom: 'Pilot'}, {$inc: {vampires: -2}})
+	db.licornes.update({name: 'Pilot'}, {$inc: {vampires: -2}})
 
 Si Aurora succombe à l'attrait des sucreries, on peut ajouter une valeur à son champ `aime` avec le modificateur `$push` :
 
