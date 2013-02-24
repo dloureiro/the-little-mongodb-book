@@ -208,31 +208,31 @@ La section [Updating](http://www.mongodb.org/display/DOCS/Updating) du site de M
 ## Upserts ##
 L'une des bonnes surprises de `update` est qu'on peut utiliser un `upsert`. Un `upsert` met à jour un document s'il existe ou le crée sinon. C'est très utile dans certaines situations : vous les reconnaîtrez quand vous les verrez. Pour utiliser `upsert`, il faut utiliser un troisième paramètre, `true`.
 
-Exemple trivial : un compteur de visites pour un site. Si on voulait avoir un compte total en temps réel, il faudrait vérifier si une entrée existe déjà pour la page, et décider d'utiliser `update` ou `insert`. Avec un troisième paramètre omis (ou `false`), les commandes suivantes ne feraient rien :
+Exemple trivial : un compteur de hits pour un site. Si on voulait avoir un compte total en temps réel, il faudrait vérifier si une entrée existe déjà pour la page, et décider d'utiliser `update` ou `insert`. Avec un troisième paramètre omis (ou `false`), les commandes suivantes ne feraient rien :
 
-	db.visites.update({page: 'unicorns'}, {$inc: {visites: 1}});
-	db.visites.find();
+	db.hits.update({page: 'unicorns'}, {$inc: {hits: 1}});
+	db.hits.find();
 
 Par contre, si on active les upserts, le résultat est différent :
 
-	db.visites.update({page: 'unicorns'}, {$inc: {visites: 1}}, true);
-	db.visites.find();
+	db.hits.update({page: 'unicorns'}, {$inc: {hits: 1}}, true);
+	db.hits.find();
 
-Comme aucun document n'existe avec un champ `page` avec la valeur `unicorns`, un nouveau document est créé. Si la commande est exécutée à nouveau, le document existant est mis à jour et `visites` est incrémenté à 2.
+Comme aucun document n'existe avec un champ `page` avec la valeur `unicorns`, un nouveau document est créé. Si la commande est exécutée à nouveau, le document existant est mis à jour et `hits` est incrémenté à 2.
 
-	db.visites.update({page: 'unicorns'}, {$inc: {visites: 1}}, true);
-	db.visites.find();
+	db.hits.update({page: 'unicorns'}, {$inc: {hits: 1}}, true);
+	db.hits.find();
 
 ## Updates multiples ##
 La dernière surprise que nous réserve `update`, c'est que, par défaut, un seul document est mis à jour. Dans les exemples que nous avons vus, cela paraît logique. En revanche, si l'on exécute quelque chose comme ça :
 
-	db.unicorns.update({}, {$set: {vacciné: true }});
-	db.unicorns.find({vacciné: true});
+	db.unicorns.update({}, {$set: {vaccined: true }});
+	db.unicorns.find({vaccined: true});
 
 on s'attendrait à récupérer toutes nos chères unicorns qui doivent être vaccinées. Pour obtenir le comportement désiré, il faut ajouter un quatrième paramètre et lui assigner `true` :
 
-	db.unicorns.update({}, {$set: {vacciné: true }}, false, true);
-	db.unicorns.find({vacciné: true});
+	db.unicorns.update({}, {$set: {vaccined: true }}, false, true);
+	db.unicorns.find({vaccined: true});
 
 ## Résumé du chapitre ##
 Ce chapitre a conclu notre présentation des opérations CRUD disponibles pour une collection. Nous nous sommes intéressés en particulier à `update` et avons observé trois comportements intéressants. D'abord, contrairement à SQL, un `update` MongoDB remplace le document trouvé. Le modificateur `$set` est donc très utile. Ensuite, `update` propose une variante `upsert` très utile, surtout combinée au modificateur `$inc`. Enfin, par défaut, `update` ne met à jour que le premier document trouvé.
