@@ -122,7 +122,7 @@ Revenons à nos collections *schema-less*. Essayez d'insérer un document totale
 Là encore, utilisez `find` pour lister les documents. Quand nous en saurons un peu plus, nous discuterons de ce comportement intéressant de MongoDB, mais vous devriez déjà commencer à comprendre en quoi les solutions classiques ne convenaient plus.
 
 ## Maîtriser les sélecteurs ##
-En plus des six concepts que nous avons explorés, il y a un aspect pratique de MongoDB qu'il est important de bien comprendre, avant de pouvoir aborder des sujets plus complexes : il s'agit des *query selectors*, les sélecteurs de requête. Un *query selector* est l'équivalent pour MongoDB de la clause `where` d'une requête SQL. On l'utilise pour trouver, compter, mettre à jour et effacer des documents dans des sélections. Un sélecteur est un objet JSON ; le plus simple, `{}`, sélectionne tous les documents (`null` marche aussi). Si l'on voulait trouver toutes les unicorns femelles, on pourrait utiliser `{gender: 'f'}`.
+En plus des six concepts que nous avons explorés, il y a un aspect pratique de MongoDB qu'il est important de bien comprendre, avant de pouvoir aborder des sujets plus complexes : il s'agit des *query sélecteurs*, les sélecteurs de requête. Un *query sélecteur* est l'équivalent pour MongoDB de la clause `where` d'une requête SQL. On l'utilise pour trouver, compter, mettre à jour et effacer des documents dans des sélections. Un sélecteur est un objet JSON ; le plus simple, `{}`, sélectionne tous les documents (`null` marche aussi). Si l'on voulait trouver toutes les unicorns femelles, on pourrait utiliser `{gender: 'f'}`.
 
 Avant de se plonger plus avant dans les sélecteurs, nous allons créer des données avec lesquelles jouer. D'abord, nous allons supprimer ce que nous avons mis précédemment dans `unicorns` avec `db.unicorns.remove()` (nous ne précisons pas de sélecteur, donc tous les documents seront supprimés). Maintenant, saisissez les commandes suivantes pour obtenir des données (je vous recommande d'utiliser un coper-coller) :
 
@@ -239,28 +239,28 @@ Ce chapitre a conclu notre présentation des opérations CRUD disponibles pour u
 
 Rappelez-vous que nous utilisons MongoDB depuis son *shell*. Le pilote ou la bibliothèque que vous utiliserez pourront modifier ces comportements par défaut ou exposer une API différente. Ainsi, le pilote Ruby fusionne les deux derniers paramètres en un seul élément : `{:upsert => false, :multi => false}`. De même, les pilote PHP les fusionne dans un tableau : `array('upsert' => false, 'multiple' => false)`.
 
-# Chapter 3 - Maîtriser find #
-Chapter 1 provided a superficial look at the `find` command. There's more to `find` than understanding `selectors` though. We already mentioned that the result from `find` is a `cursor`. We'll now look at exactly what this means in more detail.
+# Chapitre 3 - Maîtriser find #
+Dans le chapitre 1, nous avons brièvement abordé la commande `find`. Mais il y a bien plus à savoir à son sujet que les `sélecteurs`. Nous avons déjà vu que le résultat d'un `find` est un `cursor`. Nous allons maintenant voir en détail ce que cela signifie.
 
-## Field Selection ##
-Before we jump into `cursors`, you should know that `find` takes a second optional parameter. This parameter is the list of fields we want to retrieve. For example, we can get all of the unicorns' names by executing:
+## Sélection de champ ##
+Avant de s'occuper de `cursor`, il faut savoir que `find` prend un deuxième paramètre, optionnel : la liste des champs que l'on souhaite récupérer. Ainsi, on peut obtenir les noms de toutes les licornes en exécutant :
 
 	db.unicorns.find(null, {name: 1});
 
-By default, the `_id` field is always returned. We can explicitly exclude it by specifying `{name:1, _id: 0}`.
+Par défaut, le champ `_id` est toujours retourné. On peut l'exclure en spécifiant `{name:1, _id: 0}`.
 
-Aside from the `_id` field, you cannot mix and match inclusion and exclusion. If you think about it, that actually makes sense. You either want to select or exclude one or more fields explicitly.
+À part pour le champ `_id`, on ne peut mélanger les inclusions et les exclusions. C'est logique, finalement : on veut soit sélectionner soit exclure un ou plusieurs champs explicitement.
 
-## Ordering ##
-A few times now I've mentioned that `find` returns a cursor whose execution is delayed until needed. However, what you've no doubt observed from the shell is that `find` executes immediately. This is a behavior of the shell only. We can observe the true behavior of `cursors` by looking at one of the methods we can chain to `find`. The first that we'll look at is `sort`. `sort` works a lot like the field selection from the previous section. We specify the fields we want to sort on, using 1 for ascending and -1 for descending. For example:
+## Classer ##
+J'ai déjà dit plusieurs fois que `find` retourne un curseur dont l'exécution est retardée jusqu'à ce qu'on en ait besoin. Pourtant, vous avez sans doute remarque que, dans le *shell*, `find` s'exécute immédiatement. Ce comportement est propre au *shell* uniquement. On peut voir le véritable comportement d'un `cursor` en observant une méthode que l'on enchaîne avec `find`. La première que l'on va étudier est `sort`. `sort` est semblable à la sélection de champs vue à la section précédente. On spécifie les champs selon lesquels on veut classer, en utilisant 1 pour l'ordre croissant, -1 pour l'ordre décroissant. Par exemple :
 
-	//heaviest unicorns first
+	//Les licornes les plus lourdes en premier
 	db.unicorns.find().sort({weight: -1})
 
-	//by unicorn name then vampire kills:
+	//Par nom de licorn puis par nombre de vampires tués
 	db.unicorns.find().sort({name: 1, vampires: -1})
 
-As with a relational database, MongoDB can use an index for sorting. We'll look at indexes in more detail later on. However, you should know that MongoDB limits the size of your sort without an index. That is, if you try to sort a large result set which can't use an index, you'll get an error. Some people see this as a limitation. In truth, I wish more databases had the capability to refuse to run unoptimized queries. (I won't turn every MongoDB drawback into a positive, but I've seen enough poorly optimized databases that I sincerely wish they had a strict-mode.)
+Comme pour les bases relationnelles, MongoDB peut utiliser un index pour le classement. Nous reviendrons sur les index un peu plus tard, mais sachez que MongoDB limite la taille des tris sans index. Autrement dit, si vous essayez de trier un grand ensemble de résultats qui n'utilisent pas d'index, vous recevrez une erreur. Certains voient ça comme une limitation ; je pense moi que plus de bases de données devraient pouvoir refuser d'exécuter des requêtes non optimisées. (Je ne vais pas essayer de faire passer tous les inconvénients de Mongo pour des avantages, mais j'ai vu tellement de bases mal optimisées que j'aimerais vraiment qu'elles disposent d'un mode strict.)
 
 ## Paging ##
 Paging results can be accomplished via the `limit` and `skip` cursor methods. To get the second and third heaviest unicorn, we could do:
@@ -269,17 +269,17 @@ Paging results can be accomplished via the `limit` and `skip` cursor methods. To
 
 Using `limit` in conjunction with `sort`, is a good way to avoid running into problems when sorting on non-indexed fields.
 
-## Count ##
-The shell makes it possible to execute a `count` directly on a collection, such as:
+## Compte ##
+Le *shell* permet de faire un `count` directement sur une collection :
 
 	db.unicorns.count({vampires: {$gt: 50}})
 
-In reality, `count` is actually a `cursor` method, the shell simply provides a shortcut. Drivers which don't provide such a shortcut need to be executed like this (which will also work in the shell):
+En fait, `count` est un raccourci du *shell* pour une méthode `cursor`. Les pilotes qui ne fournissent pas ce raccourci doivent utiliser la commande suivante, qui fonctionnera aussi dans le *shell* :
 
 	db.unicorns.find({vampires: {$gt: 50}}).count()
 
-## In This Chapter ##
-Using `find` and `cursors` is a straightforward proposition. There are a few additional commands that we'll either cover in later chapters or which only serve edge cases, but, by now, you should be getting pretty comfortable working in the mongo shell and understanding the fundamentals of MongoDB.
+## Dans ce chapitre ##
+L'utilisation de `find` et `cursor` est relativement évidente. Il y a quelques autres commandes que nous verrons plus tard ou qui ne sont utiles que dans quelques cas spécifiques, mais vous devriez déjà être suffisamment à l'aise en utilisant le *shell* et commencer à comprendre les principes fondamentaux de MongoDB.
 
 # Chapter 4 - Data Modeling #
 Let's shift gears and have a more abstract conversation about MongoDB. Explaining a few new terms and some new syntax is a trivial task. Having a conversation about modeling with a new paradigm isn't as easy. The truth is that most of us are still finding out what works and what doesn't when it comes to modeling with these new technologies. It's a conversation we can start having, but ultimately you'll have to practice and learn on real code.
