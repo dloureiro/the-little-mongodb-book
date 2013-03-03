@@ -263,11 +263,11 @@ J'ai déjà dit plusieurs fois que `find` retourne un curseur dont l'exécution 
 Comme pour les bases relationnelles, MongoDB peut utiliser un index pour le classement. Nous reviendrons sur les index un peu plus tard, mais sachez que MongoDB limite la taille des tris sans index. Autrement dit, si vous essayez de trier un grand ensemble de résultats qui n'utilisent pas d'index, vous recevrez une erreur. Certains voient ça comme une limitation ; je pense moi que plus de bases de données devraient pouvoir refuser d'exécuter des requêtes non optimisées. (Je ne vais pas essayer de faire passer tous les inconvénients de Mongo pour des avantages, mais j'ai vu tellement de bases mal optimisées que j'aimerais vraiment qu'elles disposent d'un mode strict.)
 
 ## Pagination ##
-Les résultats Paging results can be accomplished via the `limit` and `skip` cursor methods. To get the second and third heaviest unicorn, we could do:
+Les résultats peuvent être "mis en page" avec les méthodes `limit` et `skip`. Ainsi, pour obtenir les deuxième et troisième licornes les plus lourdes, on ferait :
 
 	db.unicorns.find().sort({weight: -1}).limit(2).skip(1)
 
-Using `limit` in conjunction with `sort`, is a good way to avoid running into problems when sorting on non-indexed fields.
+Attention : utiliser `limit` avec `sort`, c'est s'exposer à toutes sortes de problèmes si on travaille avec des champs non indexés.
 
 ## Compte ##
 Le *shell* permet de faire un `count` directement sur une collection :
@@ -281,31 +281,30 @@ En fait, `count` est un raccourci du *shell* pour une méthode `cursor`. Les pil
 ## Dans ce chapitre ##
 L'utilisation de `find` et `cursor` est relativement évidente. Il y a quelques autres commandes que nous verrons plus tard ou qui ne sont utiles que dans quelques cas spécifiques, mais vous devriez déjà être suffisamment à l'aise en utilisant le *shell* et commencer à comprendre les principes fondamentaux de MongoDB.
 
-# Chapter 4 - Data Modeling #
-Let's shift gears and have a more abstract conversation about MongoDB. Explaining a few new terms and some new syntax is a trivial task. Having a conversation about modeling with a new paradigm isn't as easy. The truth is that most of us are still finding out what works and what doesn't when it comes to modeling with these new technologies. It's a conversation we can start having, but ultimately you'll have to practice and learn on real code.
+# Chapitre 4 - Modèle de données #
+Passons à la vitesse supérieure et parlons de MongoDB de manière un peu plus abstraite. Expliquer quelques termes et une nouvelle syntaxe, c'est assez trivial. En revanche, parler de modélisation dans un nouveau paradigme, c'est plus compliqué. Pour être honnête, la plupart d'entre nous expérimentent encore pour trouver ce qui fonctionne et ce qui ne fonctionne pas pour la modélisation avec cette nouvelle technologie. Il est poible d'aborder quelques pistes, mais il vous faudra forcément pratiquer sur du vrai code pour apprendre.
 
-Out of all NoSQL databases, document-oriented databases are probably the most similar to relational databases - at least when it comes to modeling. The differences which exist are subtle but that doesn't mean they aren't important.
+De toutes les bases NoSQL, les bases orientées documents sont peut-être les plus proches des bases relationnelles, en tout cas en ce qui concerne la modélisation. Mais si les différences sont subtiles, elles n'en sont pas moins importantes.
 
-## No Joins ##
-The first and most fundamental difference that you'll need to get comfortable with is MongoDB's lack of joins. I don't know the specific reason why some type of join syntax isn't supported in MongoDB, but I do know that joins are generally seen as non-scalable. That is, once you start to split your data horizontally, you end up performing your joins on the client (the application server) anyways. Regardless of the reasons, the fact remains that data *is* relational, and MongoDB doesn't support joins.
+## Pas d'union ##
+La première différence, fondamentale, avec laquelle il faut se familiariser, c'est le manque de fonction union. J'ignore pourquoi il n'existe même pas de fonction plus ou moins équivalente dans MongoDB, mais je sais que les unions sont généralemt considérées comme non scalables. C'est-à-dire que, quand on commence à séparer ses données horizontalement, on finit toujours par faire les unions côté client (le serveur d'application). Qu'importent les raisons, le fait est que les données sont relationnelles, et MongoDB ne propose pas de fonction union.
 
-Without knowing anything else, to live in a join-less world, we have to do joins ourselves within our application's code. Essentially we need to issue a second query to `find` the relevant data. Setting our data up isn't any different than declaring a foreign key in a relational database. Let's give a little less focus to our beautiful `unicorns` and a bit more time to our `employees`. The first thing we'll do is create an employee (I'm providing an explicit `_id` so that we can build coherent examples)
+Pour survivre sans union, il faut les faire dans le code applicatif. Concrètement, il faut lancer une deuxième requête `find` pour obtenir les données souhaitées. Préparer les données pour cela n'est pas bien différent de déclarer une clef étrangère dans une BDD relationnelle. Délaissons un peu nos `unicorns` pour revenir vers nos `employees`. Commençons par créer un employé (avec un `_id` explicite pour que l'on puisse voir ensemble des exemples concrets) :
 
 	db.employees.insert({_id: ObjectId("4d85c7039ab0fd70a117d730"), name: 'Leto'})
 
-Now let's add a couple employees and set their manager as `Leto`:
+Ajoutons deux employés et assignons-leur `Leto` comme manager :
 
 	db.employees.insert({_id: ObjectId("4d85c7039ab0fd70a117d731"), name: 'Duncan', manager: ObjectId("4d85c7039ab0fd70a117d730")});
 	db.employees.insert({_id: ObjectId("4d85c7039ab0fd70a117d732"), name: 'Moneo', manager: ObjectId("4d85c7039ab0fd70a117d730")});
 
+(On rappelle qu'un `_id` peut prendre n'importe quelle valeur. Il est probable que vous utiliserez `OjbectId` en situation réelle, c'est donc ce que nous utiliserons ici.)
 
-(It's worth repeating that the `_id` can be any unique value. Since you'd likely use an `ObjectId` in real life, we'll use them here as well.)
-
-Of course, to find all of Leto's employees, one simply executes:
+Évidemment, pour trouver les employés de Leto, on exécute :
 
 	db.employees.find({manager: ObjectId("4d85c7039ab0fd70a117d730")})
 
-There's nothing magical here. In the worst cases, most of the time, the lack of join will merely require an extra query (likely indexed).
+Rien de magique ici. Dans le pire des cas, la plupart du temps, l'absence d'union pourra être compensée par une simple requête supplémentaire (probablement indexée).
 
 ## Arrays and Embedded Documents ##
 Just because MongoDB doesn't have joins doesn't mean it doesn't have a few tricks up its sleeve. Remember when we quickly saw that MongoDB supports arrays as first class objects of a document? It turns out that this is incredibly handy when dealing with many-to-one or many-to-many relationships. As a simple example, if an employee could have two managers, we could simply store these in an array:
