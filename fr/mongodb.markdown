@@ -121,10 +121,10 @@ Revenons à nos collections *schema-less*. Essayez d'insérer un document totale
 
 Là encore, utilisez `find` pour lister les documents. Quand nous en saurons un peu plus, nous discuterons de ce comportement intéressant de MongoDB, mais vous devriez déjà commencer à comprendre en quoi les solutions classiques ne convenaient plus.
 
-## Maîtriser les sélecteurs ##
-En plus des six concepts que nous avons explorés, il y a un aspect pratique de MongoDB qu'il est important de bien comprendre, avant de pouvoir aborder des sujets plus complexes : il s'agit des *query sélecteurs*, les sélecteurs de requête. Un *query sélecteur* est l'équivalent pour MongoDB de la clause `where` d'une requête SQL. On l'utilise pour trouver, compter, mettre à jour et effacer des documents dans des sélections. Un sélecteur est un objet JSON ; le plus simple, `{}`, sélectionne tous les documents (`null` marche aussi). Si l'on voulait trouver toutes les unicorns femelles, on pourrait utiliser `{gender: 'f'}`.
+## Maîtriser les selectors ##
+En plus des six concepts que nous avons explorés, il y a un aspect pratique de MongoDB qu'il est important de bien comprendre, avant de pouvoir aborder des sujets plus complexes : il s'agit des *query selectors*, les selectors de requête. Un *query selector* est l'équivalent pour MongoDB de la clause `where` d'une requête SQL. On l'utilise pour trouver, compter, mettre à jour et effacer des documents dans des sélections. Un selector est un objet JSON ; le plus simple, `{}`, sélectionne tous les documents (`null` marche aussi). Si l'on voulait trouver toutes les unicorns femelles, on pourrait utiliser `{gender: 'f'}`.
 
-Avant de se plonger plus avant dans les sélecteurs, nous allons créer des données avec lesquelles jouer. D'abord, nous allons supprimer ce que nous avons mis précédemment dans `unicorns` avec `db.unicorns.remove()` (nous ne précisons pas de sélecteur, donc tous les documents seront supprimés). Maintenant, saisissez les commandes suivantes pour obtenir des données (je vous recommande d'utiliser un coper-coller) :
+Avant de se plonger plus avant dans les selectors, nous allons créer des données avec lesquelles jouer. D'abord, nous allons supprimer ce que nous avons mis précédemment dans `unicorns` avec `db.unicorns.remove()` (nous ne précisons pas de selector, donc tous les documents seront supprimés). Maintenant, saisissez les commandes suivantes pour obtenir des données (je vous recommande d'utiliser un coper-coller) :
 
 	db.unicorns.insert({name: 'Horny', dob: new Date(1992,2,13,7,47), loves: ['carrot','papaya'], weight: 600, gender: 'm', vampires: 63});
 	db.unicorns.insert({name: 'Aurora', dob: new Date(1991, 0, 24, 13, 0), loves: ['carrot', 'grape'], weight: 450, gender: 'f', vampires: 43});
@@ -139,7 +139,7 @@ Avant de se plonger plus avant dans les sélecteurs, nous allons créer des donn
     db.unicorns.insert({name: 'Nimue', dob: new Date(1999, 11, 20, 16, 15), loves: ['grape', 'carrot'], weight: 540, gender: 'f'});
 	db.unicorns.insert({name: 'Dunx', dob: new Date(1976, 6, 18, 18, 18), loves: ['grape', 'watermelon'], weight: 704, gender: 'm', vampires: 165});
 
-Nous avons des données, nous allons pouvoir maîtriser les sélecteurs. `{champ: valeur}` est utilisé pour trouver des documents où le `champ` est égal à `valeur`. Pour obtenir un `et`, on utilise `{champ1: valeur1, champ2: valeur2}`. Pour effectuer les comparaisons inférieur, inférieur ou égal, supérieur, supérieur ou égal, et différent, on utilise `$lt`, `$lte`, `$gt`, `$gte`, et `$ne`. Par exemple, pour trouver les unicorns mâles qui pèsent plus de 700 livres, on pourrait utiliser :
+Nous avons des données, nous allons pouvoir maîtriser les selectors. `{champ: valeur}` est utilisé pour trouver des documents où le `champ` est égal à `valeur`. Pour obtenir un `et`, on utilise `{champ1: valeur1, champ2: valeur2}`. Pour effectuer les comparaisons inférieur, inférieur ou égal, supérieur, supérieur ou égal, et différent, on utilise `$lt`, `$lte`, `$gt`, `$gte`, et `$ne`. Par exemple, pour trouver les unicorns mâles qui pèsent plus de 700 livres, on pourrait utiliser :
 
 	db.unicorns.find({gender: 'm', weight: {$gt: 700}})
 	// ou encore (pas strictement identique, mais utilisé pour montrer les possibilités)
@@ -159,20 +159,20 @@ Cet exemple est très intéressant : vous l'avez peut-être déjà remarqué, ma
 
 Il y a d'autres opérateurs que ceux que nous avons vus pour l'instant. Le plus flexible est `$where` qui permet de passer du JavaScript à exécuter sur le serveur. Ils sont tous décrits dans la section [Advanced Queries](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries) du site de MongoDB. Ceux que nous avons vus jusqu'à présents sont ceux dont vous avez besoin pour démarrer. Ce sont aussi ceux que vous utiliserez le plus souvent.
 
-Nous avons vu que ces sélecteurs peuvent être utilisés avec la commande `find`. Ils peuvent aussi être utilisés avec la commande `remove` que nous avons abordée brièvement, la commande `count` dont vous devinez probablement l'utilité, et la commande `update` avec laquelle nous allons passer du temps plus tard.
+Nous avons vu que ces selectors peuvent être utilisés avec la commande `find`. Ils peuvent aussi être utilisés avec la commande `remove` que nous avons abordée brièvement, la commande `count` dont vous devinez probablement l'utilité, et la commande `update` avec laquelle nous allons passer du temps plus tard.
 
 Le `ObjectId` que MongoDB a généré pour notre champ `_id` peut être sélectionné comme ceci :
 
 	db.unicorns.find({_id: ObjectId("monObjectId")})
 
 ## Résumé du chapitre ##
-Nous n'avons pas encore abordé la commande `update` ou certaines utilisations avancées de `find`. Par contre, nous avons fait fonctionner MongoDB, survolé les commandes `insert` et `remove` (il n'y a pas grand chose de plus à savoir !), et présenté `find` et les `sélecteurs` MongoDB. Nous sommes partis sur des bases solides. Croyez-le ou pas, mais vous connaissez désormais l'essentiel de ce qu'il y a à savoir sur MongoDB : c'est conçuç pour être rapide à apprendre et facile à utiliser. Je recommande vivement de jouer encore un peu avec votre BDD locale avant de passer à la suite. Insérez des documents différents, éventuellement dans de nouvelles collections, et familiarisez-vous avec les sélecteurs. Utilisez `find`, `count`, et `remove`. Après quelques essais par vous-même, ce qui vous avait échappé au début devrait devenir plus clair.
+Nous n'avons pas encore abordé la commande `update` ou certaines utilisations avancées de `find`. Par contre, nous avons fait fonctionner MongoDB, survolé les commandes `insert` et `remove` (il n'y a pas grand chose de plus à savoir !), et présenté `find` et les `selectors` MongoDB. Nous sommes partis sur des bases solides. Croyez-le ou pas, mais vous connaissez désormais l'essentiel de ce qu'il y a à savoir sur MongoDB : c'est conçuç pour être rapide à apprendre et facile à utiliser. Je recommande vivement de jouer encore un peu avec votre BDD locale avant de passer à la suite. Insérez des documents différents, éventuellement dans de nouvelles collections, et familiarisez-vous avec les selectors. Utilisez `find`, `count`, et `remove`. Après quelques essais par vous-même, ce qui vous avait échappé au début devrait devenir plus clair.
 
 # Chapitre 2 - Update #
 Dans le premier chapitre, nous avons présenté trois des quatre opérations CRUD (*create*, *read*, *update*, et *delete* soit créer, lire, mettre à jour et effacer). Le présent chapitre est donc consacré à celle qui manque : `update`, et à son fonctionnement parfois un peu surprenant.
 
 ## Update : Replace ou $set ? ##
-Dans sa forme la plus simple, `update` prend deux arguments : le sélecteur (*where*) à utiliser, et le champ à mettre à jour. Si Roooooodles a pris un peu de poids, on peut exécuter :
+Dans sa forme la plus simple, `update` prend deux arguments : le selector (*where*) à utiliser, et le champ à mettre à jour. Si Roooooodles a pris un peu de poids, on peut exécuter :
 
 	db.unicorns.update({name: 'Roooooodles'}, {weight: 590})
 
@@ -240,7 +240,7 @@ Ce chapitre a conclu notre présentation des opérations CRUD disponibles pour u
 Rappelez-vous que nous utilisons MongoDB depuis son *shell*. Le pilote ou la bibliothèque que vous utiliserez pourront modifier ces comportements par défaut ou exposer une API différente. Ainsi, le pilote Ruby fusionne les deux derniers paramètres en un seul élément : `{:upsert => false, :multi => false}`. De même, les pilote PHP les fusionne dans un tableau : `array('upsert' => false, 'multiple' => false)`.
 
 # Chapitre 3 - Maîtriser find #
-Dans le chapitre 1, nous avons brièvement abordé la commande `find`. Mais il y a bien plus à savoir à son sujet que les `sélecteurs`. Nous avons déjà vu que le résultat d'un `find` est un `cursor`. Nous allons maintenant voir en détail ce que cela signifie.
+Dans le chapitre 1, nous avons brièvement abordé la commande `find`. Mais il y a bien plus à savoir à son sujet que les `selectors`. Nous avons déjà vu que le résultat d'un `find` est un `cursor`. Nous allons maintenant voir en détail ce que cela signifie.
 
 ## Sélection de champ ##
 Avant de s'occuper de `cursor`, il faut savoir que `find` prend un deuxième paramètre, optionnel : la liste des champs que l'on souhaite récupérer. Ainsi, on peut obtenir les noms de toutes les licornes en exécutant :
@@ -262,8 +262,8 @@ J'ai déjà dit plusieurs fois que `find` retourne un curseur dont l'exécution 
 
 Comme pour les bases relationnelles, MongoDB peut utiliser un index pour le classement. Nous reviendrons sur les index un peu plus tard, mais sachez que MongoDB limite la taille des tris sans index. Autrement dit, si vous essayez de trier un grand ensemble de résultats qui n'utilisent pas d'index, vous recevrez une erreur. Certains voient ça comme une limitation ; je pense moi que plus de bases de données devraient pouvoir refuser d'exécuter des requêtes non optimisées. (Je ne vais pas essayer de faire passer tous les inconvénients de Mongo pour des avantages, mais j'ai vu tellement de bases mal optimisées que j'aimerais vraiment qu'elles disposent d'un mode strict.)
 
-## Paging ##
-Paging results can be accomplished via the `limit` and `skip` cursor methods. To get the second and third heaviest unicorn, we could do:
+## Pagination ##
+Les résultats Paging results can be accomplished via the `limit` and `skip` cursor methods. To get the second and third heaviest unicorn, we could do:
 
 	db.unicorns.find().sort({weight: -1}).limit(2).skip(1)
 
