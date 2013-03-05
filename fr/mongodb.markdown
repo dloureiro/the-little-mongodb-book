@@ -286,10 +286,10 @@ Passons à la vitesse supérieure et parlons de MongoDB de manière un peu plus 
 
 De toutes les bases NoSQL, les bases orientées documents sont peut-être les plus proches des bases relationnelles, en tout cas en ce qui concerne la modélisation. Mais si les différences sont subtiles, elles n'en sont pas moins importantes.
 
-## Pas d'union ##
-La première différence, fondamentale, avec laquelle il faut se familiariser, c'est le manque de fonction union. J'ignore pourquoi il n'existe même pas de fonction plus ou moins équivalente dans MongoDB, mais je sais que les unions sont généralemt considérées comme non scalables. C'est-à-dire que, quand on commence à séparer ses données horizontalement, on finit toujours par faire les unions côté client (le serveur d'application). Qu'importent les raisons, le fait est que les données sont relationnelles, et MongoDB ne propose pas de fonction union.
+## Pas de jointure ##
+La première différence, fondamentale, avec laquelle il faut se familiariser, c'est le manque de jointure. J'ignore pourquoi il n'existe même pas de fonction plus ou moins équivalente dans MongoDB, mais je sais que les jointures sont généralement considérées comme non scalables. C'est-à-dire que, quand on commence à séparer ses données horizontalement, on finit toujours par faire les jointures côté client (le serveur d'application). Qu'importent les raisons, le fait est que les données sont relationnelles, et MongoDB ne propose pas de jointure.
 
-Pour survivre sans union, il faut les faire dans le code applicatif. Concrètement, il faut lancer une deuxième requête `find` pour obtenir les données souhaitées. Préparer les données pour cela n'est pas bien différent de déclarer une clef étrangère dans une BDD relationnelle. Délaissons un peu nos `unicorns` pour revenir vers nos `employees`. Commençons par créer un employé (avec un `_id` explicite pour que l'on puisse voir ensemble des exemples concrets) :
+Pour survivre sans jointure, il faut les faire dans le code applicatif. Concrètement, il faut lancer une deuxième requête `find` pour obtenir les données souhaitées. Préparer les données pour cela n'est pas bien différent de déclarer une clef étrangère dans une BDD relationnelle. Délaissons un peu nos `unicorns` pour revenir vers nos `employees`. Commençons par créer un employé (avec un `_id` explicite pour que l'on puisse voir ensemble des exemples concrets) :
 
 	db.employees.insert({_id: ObjectId("4d85c7039ab0fd70a117d730"), name: 'Leto'})
 
@@ -304,9 +304,10 @@ Ajoutons deux employés et assignons-leur `Leto` comme manager :
 
 	db.employees.find({manager: ObjectId("4d85c7039ab0fd70a117d730")})
 
-Rien de magique ici. Dans le pire des cas, la plupart du temps, l'absence d'union pourra être compensée par une simple requête supplémentaire (probablement indexée).
+Rien de magique ici. Dans le pire des cas, la plupart du temps, l'absence de jointure pourra être compensée par une simple requête supplémentaire (probablement indexée).
 
-## Arrays and Embedded Documents ##
+## Tableaux et documents embarqués ##
+Mongo n'a peut-être pas de jointures, mais a des 
 Just because MongoDB doesn't have joins doesn't mean it doesn't have a few tricks up its sleeve. Remember when we quickly saw that MongoDB supports arrays as first class objects of a document? It turns out that this is incredibly handy when dealing with many-to-one or many-to-many relationships. As a simple example, if an employee could have two managers, we could simply store these in an array:
 
 	db.employees.insert({_id: ObjectId("4d85c7039ab0fd70a117d733"), name: 'Siona', manager: [ObjectId("4d85c7039ab0fd70a117d730"), ObjectId("4d85c7039ab0fd70a117d732")] })
