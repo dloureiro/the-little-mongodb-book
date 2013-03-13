@@ -307,37 +307,35 @@ Ajoutons deux employés et assignons-leur `Leto` comme manager :
 Rien de magique ici. Dans le pire des cas, la plupart du temps, l'absence de jointure pourra être compensée par une simple requête supplémentaire (probablement indexée).
 
 ## Tableaux et documents embarqués ##
-Mongo n'a peut-être pas de jointures, mais a des 
-Just because MongoDB doesn't have joins doesn't mean it doesn't have a few tricks up its sleeve. Remember when we quickly saw that MongoDB supports arrays as first class objects of a document? It turns out that this is incredibly handy when dealing with many-to-one or many-to-many relationships. As a simple example, if an employee could have two managers, we could simply store these in an array:
+Mongo n'a pas de jointures mais ne manque pas d'atouts. Nous avions rapidement abordé le fait qu'un tableau pouvait être un objet de première classe d'un document. Il se trouve que c'est très utile quand on a affaire à des relations 1-n ou n-n. Par exemple, si un employé pouvait avoir deux managers, on pourrait les enregistrer dans un tableau :
 
 	db.employees.insert({_id: ObjectId("4d85c7039ab0fd70a117d733"), name: 'Siona', manager: [ObjectId("4d85c7039ab0fd70a117d730"), ObjectId("4d85c7039ab0fd70a117d732")] })
 
-Of particular interest is that, for some documents, `manager` can be a scalar value, while for others it can be an array. Our original `find` query will work for both:
+Encore plus intéressant : `manager` peut être une valeur normale pour certains documents et un tableau pour d'autres. Notre requête `find` du début marcherait pour les deux :
 
 	db.employees.find({manager: ObjectId("4d85c7039ab0fd70a117d730")})
 
-You'll quickly find that arrays of values are much more convenient to deal with than many-to-many join-tables.
+Vous vous rendrez vite compte que les tableaux de valeurs sont bien plus simples à manipuler que des jointures de tables n-n.
 
-Besides arrays, MongoDB also supports embedded documents. Go ahead and try inserting a document with a nested document, such as:
+En plus des tableaux, Mongo gère les imbrications de documents. Essayez d'insérer un document dans un document, comme ceci :
 
 	db.employees.insert({_id: ObjectId("4d85c7039ab0fd70a117d734"), name: 'Ghanima', family: {mother: 'Chani', father: 'Paul', brother: ObjectId("4d85c7039ab0fd70a117d730")}})
 
-In case you are wondering, embedded documents can be queried using a dot-notation:
+Si vous vous posez la question, on peut appeler les documents imbriqués en utilisant un . :
 
 	db.employees.find({'family.mother': 'Chani'})
 
-We'll briefly talk about where embedded documents fit and how you should use them.
+Nous allons parler brièvement de l'utilité des documents imbriqués et de comment les utiliser.
 
 ## DBRef ##
-MongoDB supports something known as `DBRef` which is a convention many drivers support. When a driver encounters a `DBRef` it can automatically pull the referenced document. A `DBRef` includes the collection and id of the referenced document. It generally serves a pretty specific purpose: when documents from the same collection might reference documents from a different collection from each other. That is, the `DBRef` for document1 might point to a document in `managers` whereas the `DBRef` for document2 might point to a document in `employees`.
+Mongo utilise une chose appelée `DBRef` qui est une convention supportée par de nombreux pilotes. Lorsqu'un pilote rencontre un `DBRef`, il peut automatiquement récupérer le document référence. Un `DBRef` contient la collection et l'id du document référencé. Généralement, son utilité est très spécifique : quand les documents d'une même collection peuvent référencer des documents d'une collection différente de la leur. Par exemple, le `DBRef` de document1 pourrait pointer vers un document dans `managers` et le `DBRef` de document2, vers un document dans `employees`.
 
+## Dénormalisation ##
+Une autre alternative à l'utilisation de jointures est de dénormaliser ses données. Historiquement, la dénormalisation était réservée à du code pour lequel les performances étaient importantes, ou quand on pouvait faire des sauvegardes des données (comme pour un journal d'audit). Cependant, du fait de la popularité grandissante des bases NoSQL, qui permettent rarement les jointures, la dénormalisation fait de plus en plus souvent partie de la modélisation normale. Ça ne veut pas dire qu'il faut dupliquer toutes les informations dans tous les documents, mais plutôt qu'il ne faut pas avoir de dupliquer des données si le modèle le réclame.
 
-## Denormalization ##
-Yet another alternative to using joins is to denormalize your data. Historically, denormalization was reserved for performance-sensitive code, or when data should be snapshotted (like in an audit log). However, with the ever-growing popularity of NoSQL, many of which don't have joins, denormalization as part of normal modeling is becoming increasingly common. This doesn't mean you should duplicate every piece of information in every document. However, rather than letting fear of duplicate data drive your design decisions, consider modeling your data based on what information belongs to what document.
+Imaginons que l'on développe un forum. La méthode habituelle est d'associer un `user` spécifique à un `post` via une colonne `userid` dans `posts`. Dans ce modèle, il n'est pas possible d'afficher des `posts` sans récupérer (via une jointure) `users`. On peut plutôt stocker le `name`, en plus du `userid`, avec chaque `post`. On pourrait même le faire avec un document imbriqué : `user: {id: ObjectId('Something'), name: 'Leto'}`. Et, oui, si l'utilisateur change de nom, il faudra mettre chaque document à jour (mais cela se fait en une seule requête).
 
-For example, say you are writing a forum application. The traditional way to associate a specific `user` with a `post` is via a `userid` column within `posts`. With such a model, you can't display `posts` without retrieving (joining to) `users`. A possible alternative is simply to store the `name` as well as the `userid` with each `post`. You could even do so with an embedded document, like `user: {id: ObjectId('Something'), name: 'Leto'}`. Yes, if you let users change their name, you'll have to update each document (which is 1 extra query).
-
-Adjusting to this kind of approach won't come easy to some. In a lot of cases it won't even make sense to do this. Don't be afraid to experiment with this approach though. It's not only suitable in some circumstances, but it can also be the right way to do it.
+Cette habitude peut être difficile à prendre pour certains. Dans de nombreux cas, elle ne sera même pas pertinente. Mais n'hésitez surtout pas à essayer de l'utiliser : non seulement elle convient dans certains cas, mais c'est parfois la solution idéale.
 
 ## Which Should You Choose? ##
 Arrays of ids are always a useful strategy when dealing with one-to-many or many-to-many scenarios. It's probably safe to say that `DBRef`s aren't used very often, though you can certainly experiment and play with them. That generally leaves new developers unsure about using embedded documents versus doing manual referencing.
