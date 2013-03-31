@@ -335,16 +335,16 @@ Une autre alternative à l'utilisation de jointures est de dénormaliser ses don
 
 Imaginons que l'on développe un forum. La méthode habituelle est d'associer un `user` spécifique à un `post` via une colonne `userid` dans `posts`. Dans ce modèle, il n'est pas possible d'afficher des `posts` sans récupérer (via une jointure) `users`. On peut plutôt stocker le `name`, en plus du `userid`, avec chaque `post`. On pourrait même le faire avec un document imbriqué : `user: {id: ObjectId('Something'), name: 'Leto'}`. Et, oui, si l'utilisateur change de nom, il faudra mettre chaque document à jour (mais cela se fait en une seule requête).
 
-Cette habitude peut être difficile à prendre pour certains. Dans de nombreux cas, elle ne sera même pas pertinente. Mais n'hésitez surtout pas à essayer de l'utiliser : non seulement elle convient dans certains cas, mais c'est parfois la solution idéale.
+Cette habitude peut être difficile à prendre pour certains. Dans de nombreux cas, elle ne sera même pas pertinente. Mais n'hésitez surtout pas à l'essayer : non seulement elle convient dans certains cas, mais c'est parfois la meilleure des solutions.
 
-## Which Should You Choose? ##
-Arrays of ids are always a useful strategy when dealing with one-to-many or many-to-many scenarios. It's probably safe to say that `DBRef`s aren't used very often, though you can certainly experiment and play with them. That generally leaves new developers unsure about using embedded documents versus doing manual referencing.
+## Que choisir ? ##
+Les tableaux d'identifiants sont souvent utiles dans les cas 1-n ou n-n. On peut dire que les `DBRefs` ne sont pas souvent utilisées, même si vous pouvez évidemment jouer avec. Généralement, les développeurs débutants ne savent pas quoi utiliser entre les documents embarqués et le référencement manuel.
 
-First, you should know that an individual document is currently limited to 16 megabytes in size. Knowing that documents have a size limit, though quite generous, gives you some idea of how they are intended to be used. At this point, it seems like most developers lean heavily on manual references for most of their relationships. Embedded documents are frequently leveraged, but mostly for small pieces of data which we want to always pull with the parent document. A real world example I've used is to store an `accounts` document with each user, something like:
+D'abord, il faut savoir qu'un document individuel est actuellement limité à une taille de 16 Mo. Cette limite, bien que généreuse, donne une idée de la manière dont les documents devraient être utilisés. La plupart des développeurs utilisent des références manuelles pour la majorité de leurs relations. Ils exploitent souvent les capacités des documents embarqués, mais surtout pour des petites quantités de données qui sont souvent demandées en même temps que le document parent. Un exemple concret est de stocker un document `accounts` pour chaque utilisateur, comme ceci :
 
 	db.users.insert({name: 'leto', email: 'leto@dune.gov', account: {allowed_gholas: 5, spice_ration: 10}})
 
-That doesn't mean you should underestimate the power of embedded documents or write them off as something of minor utility. Having your data model map directly to your objects makes things a lot simpler and often does remove the need to join. This is especially true when you consider that MongoDB lets you query and index fields of an embedded document.
+Mais ne sous-estimez pas pour autant les documents embarqués : ce sont bien plus que des gadgets. Pouvoir plaquer son modèle de données directement sur ses objets facilite vraiment la vie, et permet souvent de se dispenser des jointures. C'est particulièrement vrai dans le cas de Mongo, qui permet de faire des requêtes et d'indexer les champs d'un document embarqué.
 
 ## Few or Many Collections ##
 Given that collections don't enforce any schema, it's entirely possible to build a system using a single collection with a mishmash of documents.  From what I've seen, most MongoDB systems are laid out similarly to what you'd find in a relational system. In other words, if it would be a table in a relational database, it'll likely be a collection in MongoDB (many-to-many join tables being an important exception).
